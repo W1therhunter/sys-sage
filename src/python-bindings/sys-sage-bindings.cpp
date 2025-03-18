@@ -215,23 +215,25 @@ PYBIND11_MODULE(sys_sage, m) {
         m.attr("DATAPATH_TYPE_C2C") = SYS_SAGE_DATAPATH_TYPE_C2C;
 
     //bind component class
-    py::class_<Component, std::unique_ptr<Component, py::nodelete>>(m, "Component", py::dynamic_attr(),"Generic Component")
+    py::class_<Component>(m, "Component", /*py::dynamic_attr(),*/"Generic Component")
         .def(py::init<int, string, int>(), py::arg("id") = 0, py::arg("name") = "unknown", py::arg("type") = SYS_SAGE_COMPONENT_NONE)
         .def(py::init<Component *, int, string, int>(), py::arg("parent"), py::arg("id") = 0, py::arg("name") = "unknown", py::arg("type") = SYS_SAGE_COMPONENT_NONE)
-        .def("__setattr__", [](Component& self, const std::string& name, py::object value) {
-            set_attribute(self,name, value);
-        })
-        .def("__getattr__", [](Component& self, const std::string& name) {
-            return get_attribute(self,name);
-        })
-        .def("__delattr__", [](Component& self, const std::string& name) {
-            remove_attribute(self,name);
-        })
+        // .def("__setattr__", [](Component& self, const std::string& name, py::object value) {
+        //     set_attribute(self,name, value);
+        // })
+        // .def("__getattr__", [](Component& self, const std::string& name) {
+        //     return get_attribute(self,name);
+        // })
+        // .def("__delattr__", [](Component& self, const std::string& name) {
+        //     remove_attribute(self,name);
+        // })
         .def("InsertChild", &Component::InsertChild, py::arg("child"), "Insert a child component")
         .def("InsertBetweenParentAndChild", &Component::InsertBetweenParentAndChild, py::arg("parent"), py::arg("child"), py::arg("alreadyParentsChild"),"Insert a component between parent and child")
         .def("InsertBetweenParentAndChildren", &Component::InsertBetweenParentAndChildren, py::arg("parent"), py::arg("children"), py::arg("alreadyParentsChildren"), "Insert a component between parent and children")
         .def("RemoveChild", &Component::RemoveChild, py::arg("child"),"Remove a child component")
         .def_property("parent", &Component::GetParent, &Component::SetParent, "The parent of the component")
+        .def("GetParent", &Component::GetParent, "The parent of the component")
+        .def("SetParent", &Component::SetParent, py::arg("parent"), "The parent of the component")
         .def("PrintSubtree", (void (Component::*)()) &Component::PrintSubtree, "Print the subtree of the component up to level 0")
         .def("PrintSubtree", (void (Component::*)(int)) &Component::PrintSubtree, "Print the subtree of the component with a maximum depth of <level>")
         .def("PrintAllDataPathsInSubtree", &Component::PrintAllDataPathsInSubtree, "Print the datapath subtree of the component")
@@ -282,28 +284,28 @@ PYBIND11_MODULE(sys_sage, m) {
             //TODO: add more info
             return "<Component: " + self.GetName() + ">";
             });
-    py::class_<Topology, std::unique_ptr<Topology, py::nodelete>,Component>(m, "Topology")
+    py::class_<Topology,Component>(m, "Topology")
         .def(py::init<>());
-    py::class_<Node, std::unique_ptr<Node, py::nodelete>, Component>(m, "Node")
+    py::class_<Node, Component>(m, "Node")
         .def(py::init<int, string>(), py::arg("id") = 0, py::arg("name")= "Node")
         .def(py::init<Component*, int, string>(), py::arg("parent"), py::arg("id") = 0, py::arg("name") = "Node")
         .def("RefreshCpuCoreFrequency", &Node::RefreshCpuCoreFrequency, py::arg("keep_history")=false,"Refresh the cpu core frequency");
-    py::class_<Memory,std::unique_ptr<Memory, py::nodelete>, Component>(m, "Memory")
+    py::class_<Memory, Component>(m, "Memory")
         .def(py::init<long long, bool>(), py::arg("size") = -1, py::arg("isVolatile") = false)
         .def(py::init<Component*,int, string, long long, bool>(), py::arg("parent"), py::arg("id") = 0, py::arg("name") = "Memory", py::arg("size")=-1, py::arg("isVolatile")=false)
         .def_property("size", &Memory::GetSize, &Memory::SetSize, "The size of the memory")
         .def_property("isVolatile", &Memory::GetIsVolatile, &Memory::SetIsVolatile, "Whether the memory is volatile or not");
-    py::class_<Storage, std::unique_ptr<Storage, py::nodelete>, Component>(m, "Storage")
+    py::class_<Storage, Component>(m, "Storage")
         .def(py::init<long long>(), py::arg("size")=-1)
         .def(py::init<Component*,long long>(), py::arg("parent"), py::arg("size")= -1)
         .def_property("size", &Storage::GetSize, &Storage::SetSize, "The size of the storage");
-    py::class_<Chip,std::unique_ptr<Chip, py::nodelete>, Component>(m, "Chip")
+    py::class_<Chip, Component>(m, "Chip")
         .def(py::init<int,string,int,string,string>(), py::arg("id") = 0, py::arg("name") = "Chip", py::arg("chipType")= 1, py::arg("vendor") = "", py::arg("model") = "", py::return_value_policy::reference)
         .def(py::init<Component*,int,string,int,string,string>(), py::arg("parent"),py::arg("id") = 0, py::arg("name") = "Chip", py::arg("chipType") = 1, py::arg("vendor") = "", py::arg("model") = "")
         .def_property("vendor", &Chip::GetVendor, &Chip::SetVendor, "The vendor of the chip")
         .def_property("model", &Chip::GetModel, &Chip::SetModel, "The model of the chip")
         .def_property("chipType", &Chip::GetChipType, &Chip::SetChipType, "The type of the chip");
-    py::class_<Cache, std::unique_ptr<Cache, py::nodelete>, Component>(m, "Cache")
+    py::class_<Cache, Component>(m, "Cache")
         .def(py::init<int,int,long long, int, int>(), py::arg("id") = 0, py::arg("level") = 0, py::arg("size") = -1, py::arg("associativity") = -1, py::arg("lineSize") = -1)
         .def(py::init<Component*,int,int,long long, int, int>(), py::arg("parent"), py::arg("id") = 0, py::arg("level") = 0, py::arg("size") = -1, py::arg("associativity") = -1, py::arg("lineSize") = -1)
         .def(py::init<Component*, int, string, long long, int, int>(), py::arg("parent"), py::arg("id"), py::arg("cache_type"), py::arg("size") = -1, py::arg("associativity") = -1, py::arg("lineSize") = -1)
@@ -312,25 +314,25 @@ PYBIND11_MODULE(sys_sage, m) {
         .def_property("cacheSize", &Cache::GetCacheSize, &Cache::SetCacheSize, "The size of the cache")
         .def_property("cacheAssociativity", &Cache::GetCacheAssociativityWays, &Cache::SetCacheAssociativityWays, "The associativity of the cache")
         .def_property("cacheLineSize", &Cache::GetCacheLineSize, &Cache::SetCacheLineSize, "The line size of the cache");
-    py::class_<Subdivision, std::unique_ptr<Subdivision, py::nodelete>, Component>(m, "Subdivision")
+    py::class_<Subdivision, Component>(m, "Subdivision")
         .def(py::init<int,string, int>(), py::arg("id") = 0, py::arg("name") = "Subdivision", py::arg("componentType") = 16)
         .def(py::init<Component*,int,string, int>(), py::arg("parent"), py::arg("id") = 0, py::arg("name") = "Subdivision", py::arg("componentType") = 16)
         .def_property("subdivisionType", &Subdivision::GetSubdivisionType, &Subdivision::SetSubdivisionType, "The type of the subdivision");
-    py::class_<Numa,std::unique_ptr<Numa, py::nodelete>, Subdivision>(m, "Numa")
+    py::class_<Numa, Subdivision>(m, "Numa")
         .def(py::init<int, long long>(), py::arg("id") = 0, py::arg("size") = -1)
         .def(py::init<Component*, int, long long>(), py::arg("parent"), py::arg("id") = 0, py::arg("size") = -1)
         .def_property("size", &Numa::GetSize, &Numa::SetSize, "Size of the NUMA region");
-    py::class_<Core, std::unique_ptr<Core, py::nodelete>, Component>(m, "Core")
+    py::class_<Core, Component>(m, "Core")
         .def(py::init<int,string>(),py::arg("id") = 0, py::arg("name") = "Core")
         .def(py::init<Component*,int,string>(),py::arg("parent"),py::arg("id") = 0 ,py::arg("name") = "Core")
         .def("RefreshFreq", &Core::RefreshFreq,py::arg("keep_history") = false,"Refresh the frequency of the component")
         .def_property("freq", &Core::GetFreq, &Core::SetFreq, "Frequency of this core");
-    py::class_<Thread, std::unique_ptr<Thread, py::nodelete>,Component>(m,"Thread")
+    py::class_<Thread,Component>(m,"Thread")
         .def(py::init<int,string>(),py::arg("id") = 0,py::arg("name") = "Thread")
         .def(py::init<Component*,int,string>(),py::arg("parent"),py::arg("id") = 0,py::arg("name") = "Thread")
         .def("RefreshFreq", &Thread::RefreshFreq,py::arg("keep_history") = false,"Refresh the frequency of the component")
         .def_property_readonly("freq", &Thread::GetFreq, "Get Frequency of this thread");
-    py::class_<DataPath, std::unique_ptr<DataPath, py::nodelete>>(m,"DataPath",py::dynamic_attr())
+    py::class_<DataPath>(m,"DataPath",py::dynamic_attr())
         .def(py::init<Component*, Component*, int, int>(), py::arg("source"), py::arg("target"), py::arg("oriented"), py::arg("type") = 32)
         .def(py::init<Component*, Component*, int, double, double>(), py::arg("source"), py::arg("target"), py::arg("oriented"), py::arg("bw"), py::arg("latency"))
         .def(py::init<Component*, Component*, int, int, double, double>(), py::arg("source"), py::arg("target"), py::arg("oriented"), py::arg("type"), py::arg("bw"), py::arg("latency"))
