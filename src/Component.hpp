@@ -63,7 +63,7 @@ public:
     * @private
     * Use Delete() or DeleteSubtree() for deleting and deallocating the components. 
     */
-    virtual ~Component() = default;
+    virtual ~Component();
     /**
     Inserts a Child component to this component (in the Component Tree).
     The child pointer will be inserted at the end of std::vector of children (retrievable through GetChildren(), GetChild(int _id) etc.)

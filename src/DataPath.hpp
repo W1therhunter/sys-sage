@@ -88,6 +88,8 @@ public:
     */
     DataPath(Component* _source, Component* _target, int _oriented, int _type, double _bw, double _latency);
 
+    ~DataPath();
+
     /**
     @returns Pointer to the source Component
     */
